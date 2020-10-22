@@ -59,8 +59,8 @@ Percentage of requests that succeeded: 100%
 Error codes returned that weren't a success: []
 
 Size in bytes:
-        Smallest response: 865
-        Largest response: 865
+        Smallest response: 865 bytes
+        Largest response: 865 bytes
 ```
 
 ## Output on various other sites with number of requests = 10
@@ -81,8 +81,8 @@ Percentage of requests that succeeded: 100%
 Error codes returned that weren't a success: []
 
 Size in bytes:
-        Smallest response: 109318
-        Largest response: 109367
+        Smallest response: 109318 bytes
+        Largest response: 109367 bytes
 ```
 
 - [Google](www.google.com)
@@ -102,28 +102,60 @@ Percentage of requests that succeeded: 100%
 Error codes returned that weren't a success: []
 
 Size in bytes:
-        Smallest response: 49627
-        Largest response: 49725
+        Smallest response: 49627 bytes
+        Largest response: 49725 bytes
 ```
 - [Facebook](www.facebook.com)
 ```
 Http request -> "GET / HTTP/1.1\r\nHost: www.facebook.com:443\r\nConnection: close\r\n\r\n"
 
-Number of requests: 10
+Response: 
+HTTP/1.1 302 Found
+Location: https://www.facebook.com/unsupportedbrowser
+Strict-Transport-Security: max-age=15552000; preload
+Content-Type: text/html; charset="utf-8"
+X-FB-Debug: FeAlEtSKEzaAZnnJ0Mak4C1FA9um9icW40I2Xh1z6TQPjq4M8kPD/zO1OwtyZlR+U4NpwvKGFQpqPWaHrOyNyQ==
+Date: Thu, 22 Oct 2020 06:41:41 GMT
+Alt-Svc: h3-29=":443"; ma=3600,h3-27=":443"; ma=3600
+Connection: close
+Content-Length: 0
+
+Number of requests: 1
 
 Time:
-        Fastest time: 88.601193ms
-        Slowest time: 133.637595ms
-        Mean time: 97.11485ms
-        Median time: 92.640969ms
+        Fastest time: 110.873598ms
+        Slowest time: 110.873598ms
+        Mean time: 110.873598ms
+        Median time: 110.873598ms
 
 Percentage of requests that succeeded: 100%
 
-Error codes returned that weren't a success: ["302", "302", "302", "302", "302", "302", "302", "302", "302", "302"]
+Error codes returned that weren't a success: ["302"]
 
 Size in bytes:
-        Smallest response: 404
-        Largest response: 404
+        Smallest response: 404 bytes
+        Largest response: 404 bytes
+```
+The response status code is 302 which means indicates that the resource requested has been temporarily moved to the URL given by the Location header([Link](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302)). Therefore, requesting on the new location provided in the response: https://www.facebook.com/unsupportedbrowser results in - 
+
+```
+Http request -> "GET /unsupportedbrowser HTTP/1.1\r\nHost: www.facebook.com:443\r\nConnection: close\r\n\r\n"
+
+Number of requests: 10
+
+Time:
+        Fastest time: 173.144601ms
+        Slowest time: 445.710051ms
+        Mean time: 225.361271ms
+        Median time: 192.628656ms
+
+Percentage of requests that succeeded: 100%
+
+Error codes returned that weren't a success: []
+
+Size in bytes:
+        Smallest response: 175586 bytes
+        Largest response: 175804 bytes
 ```
 - [Rust-lang](www.rust-lang.org)
 ```
@@ -142,8 +174,8 @@ Percentage of requests that succeeded: 100%
 Error codes returned that weren't a success: []
 
 Size in bytes:
-        Smallest response: 20085
-        Largest response: 20085
+        Smallest response: 20085 bytes
+        Largest response: 20085 bytes
 ```
 - [Reddit's popular page](www.reddit.com/r/popular)
 ```
@@ -162,9 +194,36 @@ Percentage of requests that succeeded: 100%
 Error codes returned that weren't a success: []
 
 Size in bytes:
-        Smallest response: 138090
-        Largest response: 818850
+        Smallest response: 138090 bytes
+        Largest response: 818850 bytes
 ```
+- [Cloudflare](www.cloudflare.com)
+```
+Http request -> "GET / HTTP/1.1\r\nHost: www.cloudflare.com:443\r\nConnection: close\r\n\r\n"
+
+Number of requests: 10
+
+Time:
+        Fastest time: 145.4583ms
+        Slowest time: 214.052186ms
+        Mean time: 176.355925ms
+        Median time: 177.341494ms
+
+Percentage of requests that succeeded: 100%
+
+Error codes returned that weren't a success: []
+
+Size in bytes:
+        Smallest response: 102747 bytes
+        Largest response: 102911 bytes
+```
+
+## Analysis
+The response sizes in bytes of various websites differ from each by a lot. Even the same website when requested multiple times return varying sizes of bytes (For eg. reddit's popular page). Hence, any comparisons made shouldn't be taken seriously.
+
+- My personal website return twice the number of bytes than Google however the median times for both are very close while the fastest response time for my website is approximately 10ms faster than Google's.
+
+- Reddit's popular page is very dynamic with varying size of bytes on every other request. It is also significantly slower. The smallest response size of reddit and my personal website is comparable however the difference in the fastest response time is more than a factor of 10.
 
 ## What is it?
 

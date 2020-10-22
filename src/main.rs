@@ -100,11 +100,11 @@ fn connect(host: String, num_requests: u32, path: String, verbose: bool) -> Resu
     );
     println!("\nSize in bytes:");
     println!(
-        "\tSmallest response: {:?}",
+        "\tSmallest response: {:?} bytes",
         bytes.iter().min().unwrap()
     );
     println!(
-        "\tLargest response: {:?}",
+        "\tLargest response: {:?} bytes",
         bytes.iter().max().unwrap()
     );
     Ok(())
