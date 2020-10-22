@@ -81,13 +81,13 @@ fn connect(host: String, num_requests: u32, path: String, verbose: bool) -> Resu
         }
 
         if verbose && num == 0{
-            println!("Response= {}", response);
+            println!("\nResponse: \n{}", response);
         }
     }
 
     println!("\nNumber of requests: {}", num_requests);
-    println!("\nTime:\n\tFastest time: {:?}", request_times.iter().max().unwrap());
-    println!("\tSlowest time: {:?}", request_times.iter().min().unwrap());
+    println!("\nTime:\n\tFastest time: {:?}", request_times.iter().min().unwrap());
+    println!("\tSlowest time: {:?}", request_times.iter().max().unwrap());
     println!("\tMean time: {:?}", mean(&request_times));
     println!("\tMedian time: {:?}", median(&mut request_times));
     println!(

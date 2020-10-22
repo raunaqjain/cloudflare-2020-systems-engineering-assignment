@@ -63,6 +63,109 @@ Size in bytes:
         Largest response: 865
 ```
 
+## Output on various other sites with number of requests = 10
+- [Personal Website](https://www.raunaqjain.com)
+```
+Http request -> "GET / HTTP/1.1\r\nHost: www.raunaqjain.com:443\r\nConnection: close\r\n\r\n"
+
+Number of requests: 10
+
+Time:
+        Fastest time: 139.892896ms
+        Slowest time: 338.522947ms
+        Mean time: 180.715988ms
+        Median time: 161.313032ms
+
+Percentage of requests that succeeded: 100%
+
+Error codes returned that weren't a success: []
+
+Size in bytes:
+        Smallest response: 109318
+        Largest response: 109367
+```
+
+- [Google](www.google.com)
+```
+Http request -> "GET / HTTP/1.1\r\nHost: www.google.com:443\r\nConnection: close\r\n\r\n"
+
+Number of requests: 10
+
+Time:
+        Fastest time: 150.31022ms
+        Slowest time: 191.96281ms
+        Mean time: 160.39725ms
+        Median time: 157.232126ms
+
+Percentage of requests that succeeded: 100%
+
+Error codes returned that weren't a success: []
+
+Size in bytes:
+        Smallest response: 49627
+        Largest response: 49725
+```
+- [Facebook](www.facebook.com)
+```
+Http request -> "GET / HTTP/1.1\r\nHost: www.facebook.com:443\r\nConnection: close\r\n\r\n"
+
+Number of requests: 10
+
+Time:
+        Fastest time: 88.601193ms
+        Slowest time: 133.637595ms
+        Mean time: 97.11485ms
+        Median time: 92.640969ms
+
+Percentage of requests that succeeded: 100%
+
+Error codes returned that weren't a success: ["302", "302", "302", "302", "302", "302", "302", "302", "302", "302"]
+
+Size in bytes:
+        Smallest response: 404
+        Largest response: 404
+```
+- [Rust-lang](www.rust-lang.org)
+```
+Http request -> "GET / HTTP/1.1\r\nHost: www.rust-lang.org:443\r\nConnection: close\r\n\r\n"
+
+Number of requests: 10
+
+Time:
+        Fastest time: 105.849415ms
+        Slowest time: 202.218346ms
+        Mean time: 122.887386ms
+        Median time: 113.823975ms
+
+Percentage of requests that succeeded: 100%
+
+Error codes returned that weren't a success: []
+
+Size in bytes:
+        Smallest response: 20085
+        Largest response: 20085
+```
+- [Reddit's popular page](www.reddit.com/r/popular)
+```
+Http request -> "GET /r/popular HTTP/1.1\r\nHost: www.reddit.com:443\r\nConnection: close\r\n\r\n"
+
+Number of requests: 10
+
+Time:
+        Fastest time: 1.758914712s
+        Slowest time: 10.637291288s
+        Mean time: 2.861235058s
+        Median time: 2.070298994s
+
+Percentage of requests that succeeded: 100%
+
+Error codes returned that weren't a success: []
+
+Size in bytes:
+        Smallest response: 138090
+        Largest response: 818850
+```
+
 ## What is it?
 
 This exercise is a follow-on to the [General Assignment](https://github.com/cloudflare-hiring/cloudflare-2020-general-engineering-assignment), you'll need to complete that first.  In this assignment you'll write a program that makes a request to the endpoints you created in the General Assignment.  This is a systems assignment so we want to see that you're able to use sockets directly rather than using a library that handles the HTTP request.
