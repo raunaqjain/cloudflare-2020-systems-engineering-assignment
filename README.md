@@ -1,4 +1,67 @@
 # Systems Assignment
+This is my solution for the Systems Assignment for Cloudflare 2021 New Grad position. This Rust program allows one to send HTTP GET requests multiple times and collect various metrics such as fastest time, slowest time, mean time, median time, size in bytes of smallest and largest response, and various error codes.
+
+## Usage
+To build the code use,
+``` 
+cargo build
+```
+To find the different command line arguments, run
+```
+cargo run main.rs -h
+
+Options:
+        --url URL       Give the url
+        --profile Num_hits
+                        An integer for the number of requests to be made
+    -v, --verbose VERBOSE
+                        Level of verbose (Either 0 or 1) Default 0
+    -h, --help          print this help menu
+```
+Run unit tests through, 
+``` 
+cargo test
+```
+
+## Output on my General Assessment /links page
+### Command
+```
+cargo run main.rs --url cloudflare-test.raunaqja.workers.dev/links --profile 1 -v 1
+```
+### Output
+```
+Http request -> "GET /links HTTP/1.1\r\nHost: cloudflare-test.raunaqja.workers.dev:443\r\nConnection: close\r\n\r\n"
+Response= HTTP/1.1 200 OK
+Date: Thu, 22 Oct 2020 05:39:21 GMT
+Content-Type: application/json
+Content-Length: 184
+Connection: close
+Set-Cookie: __cfduid=d6fc0cac216393dcf9651538f3bffbee31603345161; expires=Sat, 21-Nov-20 05:39:21 GMT; path=/; domain=.raunaqja.workers.dev; HttpOnly; SameSite=Lax
+cf-request-id: 05f06ab3eb0000275153127000000001
+Expect-CT: max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"
+Report-To: {"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report?lkg-colo=16&lkg-time=1603345161"}],"group":"cf-nel","max_age":604800}
+NEL: {"report_to":"cf-nel","max_age":604800}
+Server: cloudflare
+CF-RAY: 5e60e09978632751-IAD
+
+[{"name":"Portfolio","url":"https://www.raunaqjain.com"},{"name":"LinkedIn","url":"https://www.linkedin.com/in/jainraunaq"},{"name":"Github","url":"https://www.github.com/raunaqjain"}]
+
+Number of requests: 1
+
+Time:
+        Fastest time: 158.207871ms
+        Slowest time: 158.207871ms
+        Mean time: 158.207871ms
+        Median time: 158.207871ms
+
+Percentage of requests that succeeded: 100%
+
+Error codes returned that weren't a success: []
+
+Size in bytes:
+        Smallest response: 865
+        Largest response: 865
+```
 
 ## What is it?
 

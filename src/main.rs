@@ -127,7 +127,7 @@ fn main() {
         "An integer for the number of requests to be made",
         "Num_hits",
     );
-    opts.optopt("v", "verbose", "Level of verbose (Either 0 or 1) Default 0", "VERBOSE");
+    opts.optopt("v", "verbose", "Level of verbose (Either 0 or 1) Default 0 - No output", "VERBOSE");
     opts.optflag("h", "help", "print this help menu");
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
