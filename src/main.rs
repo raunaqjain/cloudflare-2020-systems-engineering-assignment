@@ -52,7 +52,7 @@ fn connect(host: String, num_requests: u32, path: String, verbose: bool) -> Resu
         "GET {} HTTP/1.1\r\nHost: {}\r\nConnection: close\r\n\r\n",
         path, host_with_socket
     );
-    println!("Http request -> {}", request);
+    println!("Http request -> {:?}", request);
     for num in 0..num_requests {
         
         let start_time = Instant::now();
@@ -64,20 +64,24 @@ fn connect(host: String, num_requests: u32, path: String, verbose: bool) -> Resu
         let _request = stream.write_all(request.as_bytes())?;
         let mut buf = vec![];
         let result = stream.read_to_end(&mut buf).unwrap();
+        let response = String::from_utf8_lossy(&buf);
+
         bytes.push(result);
         let end_time = Instant::now();
         request_times.push(end_time.duration_since(start_time));
         num_succeed = num_succeed + 1;
-        let response = String::from_utf8_lossy(&buf);
         
-        // Response[9..12] contains the HTTP Response status code and any status code taht doesn't start
+        // response contains the HTTP Response status code and any status code that doesn't start
         // with 2 is an error code.
-        if !response[9..12].starts_with("2"){
-            error_codes.push(response[9..12].to_string());
+        if let Some(mut status_code) = response.strip_prefix("HTTP/1.1"){
+            status_code = status_code.trim();
+            if !status_code.starts_with("2"){
+                error_codes.push(status_code[..3].to_string());
+            }
         }
 
         if verbose && num == 0{
-            println!("buf = {}", String::from_utf8_lossy(&buf));
+            println!("Response= {}", response);
         }
     }
 
@@ -175,10 +179,49 @@ fn main() {
         None => false
     };
 
-    // println!("{}", verbose);
 
     match connect(target_url, num_profile_hits, path, verbose) {
         Ok(()) => (),
         Err(e) => println!("Error - {}", e),
     };
+}
+
+
+#[cfg(test)]
+mod tests{
+    use super::*;
+
+    #[test]
+    fn test_median() {
+        let mut a = vec![Duration::new(1,0), Duration::new(2, 0), Duration::new(4,0), Duration::new(5, 0), Duration::new(3, 0)];
+        assert_eq!(median(&mut a), Duration::new(3,0));
+        let mut b = vec![Duration::new(1, 0),Duration::new(2, 0),Duration::new(3, 0),Duration::new(4, 0)];
+        assert_eq!(median(&mut b), Duration::new(2,0) + Duration::from_millis(500));
+    }
+
+    #[test]
+    fn test_mean() {
+        let a = vec![Duration::new(1,0), Duration::new(2, 0), Duration::new(4,0), Duration::new(5, 0), Duration::new(3, 0)];
+        assert_eq!(mean(&a), Duration::new(3,0));
+        let b = vec![Duration::new(1, 0),Duration::new(2, 0),Duration::new(3, 0),Duration::new(4, 0)];
+        assert_eq!(mean(&b), Duration::new(2,0) + Duration::from_millis(500));
+    }
+
+    #[test]
+    fn test_parse_url() {
+        let a = parse_url("raunaqjain.com".to_string());
+        assert_eq!(a, ("raunaqjain.com".to_string(), "/".to_string()));
+
+        let b = parse_url("raunaqjain.com/resume".to_string());
+        assert_eq!(b, ("raunaqjain.com".to_string(), "/resume".to_string()));
+
+        let c = parse_url("http://raunaqjain.com".to_string());
+        assert_eq!(c, ("raunaqjain.com".to_string(), "/".to_string()));
+
+        let c = parse_url("https://raunaqjain.com/links".to_string());
+        assert_eq!(c, ("raunaqjain.com".to_string(), "/links".to_string()));
+
+        let c = parse_url("http://raunaqjain.com/links/github".to_string());
+        assert_eq!(c, ("raunaqjain.com".to_string(), "/links/github".to_string()));
+    }
 }
