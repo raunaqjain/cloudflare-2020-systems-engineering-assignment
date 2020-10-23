@@ -29,7 +29,7 @@ cargo test
 cargo run main.rs --url cloudflare-test.raunaqja.workers.dev/links --profile 1 -v 1
 ```
 ### Output
-![](imgs/general_assessment.png)
+![](imgs/general-assignment.png)
 
 ### Screenshot of tool on another webpage
 ![](imgs/google.png)
