@@ -7,6 +7,8 @@ use std::io::{Read, Write};
 use std::net::TcpStream;
 use std::time::{Duration, Instant};
 use std::vec::Vec;
+use tokio::task;
+use futures::future::join_all;
 
 fn parse_url(url: String) -> (String, String) {
     let pruned_url = if let Some(u) = url.strip_prefix("http://") {
@@ -39,75 +41,6 @@ fn median(ar: &mut Vec<Duration>) -> Duration {
     } else{
         ar[mid]
     }
-}
-
-fn connect(host: String, num_requests: u32, path: String, verbose: bool) -> Result<(), io::Error> {
-    let host_with_socket = format!("{}:443", host);
-    let mut request_times: Vec<Duration> = Vec::new();
-    let mut num_succeed: u32 = 0;
-    let mut bytes: Vec<usize> = Vec::new();
-    let mut error_codes: Vec<String> = Vec::new();
-    
-    let request = format!(
-        "GET {} HTTP/1.1\r\nHost: {}\r\nConnection: close\r\n\r\n",
-        path, host_with_socket
-    );
-    println!("Http request -> {:?}", request);
-    for num in 0..num_requests {
-        
-        let start_time = Instant::now();
-        
-        let connector = SslConnector::builder(SslMethod::tls()).unwrap().build();
-        let stream = TcpStream::connect(host_with_socket.clone())?;
-        let mut stream = connector.connect(&host, stream).unwrap();
-
-        let _request = stream.write_all(request.as_bytes())?;
-        let mut buf = vec![];
-        let result = stream.read_to_end(&mut buf).unwrap();
-        let response = String::from_utf8_lossy(&buf);
-
-        bytes.push(result);
-        let end_time = Instant::now();
-        request_times.push(end_time.duration_since(start_time));
-        num_succeed = num_succeed + 1;
-        
-        // response contains the HTTP Response status code and any status code that doesn't start
-        // with 2 is an error code.
-        if let Some(mut status_code) = response.strip_prefix("HTTP/1.1"){
-            status_code = status_code.trim();
-            if !status_code.starts_with("2"){
-                error_codes.push(status_code[..3].to_string());
-            }
-        }
-
-        if verbose && num == 0{
-            println!("\nResponse: \n{}", response);
-        }
-    }
-
-    println!("\nNumber of requests: {}", num_requests);
-    println!("\nTime:\n\tFastest time: {:?}", request_times.iter().min().unwrap());
-    println!("\tSlowest time: {:?}", request_times.iter().max().unwrap());
-    println!("\tMean time: {:?}", mean(&request_times));
-    println!("\tMedian time: {:?}", median(&mut request_times));
-    println!(
-        "\nPercentage of requests that succeeded: {}%",
-        (num_succeed * 100) / num_requests
-    );
-    println!(
-        "\nError codes returned that weren't a success: {:?}",
-        error_codes
-    );
-    println!("\nSize in bytes:");
-    println!(
-        "\tSmallest response: {:?} bytes",
-        bytes.iter().min().unwrap()
-    );
-    println!(
-        "\tLargest response: {:?} bytes",
-        bytes.iter().max().unwrap()
-    );
-    Ok(())
 }
 
 fn print_usage(program: &str, opts: Options) {
@@ -179,11 +112,86 @@ fn main() {
         None => false
     };
 
+    app(target_url, num_profile_hits, path, verbose).unwrap();
 
-    match connect(target_url, num_profile_hits, path, verbose) {
-        Ok(()) => (),
-        Err(e) => println!("Error - {}", e),
+    // match connect(target_url, num_profile_hits, path, verbose) {
+    //     Ok(()) => (),
+    //     Err(e) => println!("Error - {}", e),
+    // };
+}
+
+async fn connect(host: String, num_profile_hits:u32, path: String) -> Result<(usize, Duration, String), io::Error> {
+    let host_with_socket = format!("{}:443", host);    
+    let request = format!(
+        "GET {} HTTP/1.1\r\nHost: {}\r\nConnection: close\r\n\r\n",
+        path, host_with_socket
+    );
+    let start_time = Instant::now();
+        
+    let connector = SslConnector::builder(SslMethod::tls()).unwrap().build();
+    let stream = TcpStream::connect(host_with_socket.clone())?;
+    let mut stream = connector.connect(&host, stream).unwrap();
+
+    let _request = stream.write_all(request.as_bytes())?;
+    let mut buf = vec![];
+    let result = stream.read_to_end(&mut buf).unwrap();
+    let response = String::from_utf8_lossy(&buf);
+
+    let end_time = Instant::now();
+    let status_code = response.strip_prefix("HTTP/1.1").unwrap().trim().to_string();
+
+    println!("Processed {}", num_profile_hits);
+    Ok((result, end_time.duration_since(start_time), status_code))
+}
+
+#[tokio::main]
+async fn app(target_url: String, num_profile_hits: u32, path: String, _verbose: bool) -> Result<(), io::Error>{
+    let mut futures = vec![];
+    for num in 0..num_profile_hits {
+        let fut = task::spawn(connect(target_url.clone(), num, path.clone()));
+        futures.push(fut);
     };
+    let results = join_all(futures).await;
+
+    let mut request_times: Vec<Duration> = Vec::new();
+    let mut num_succeed: u32 = 0;
+    let mut bytes: Vec<usize> = Vec::new();
+    let mut error_codes: Vec<String> = Vec::new();
+
+    for result in results{
+        let output: (usize, Duration, String) = result??;
+        bytes.push(output.0);
+        request_times.push(output.1);
+        if !output.2.starts_with("2"){
+            error_codes.push(output.2[..3].to_string());
+        }
+        num_succeed = num_succeed + 1;
+    };
+
+    println!("\nNumber of requests: {}", num_profile_hits);
+    println!("\nTime:\n\tFastest time: {:?}", request_times.iter().min().unwrap());
+    println!("\tSlowest time: {:?}", request_times.iter().max().unwrap());
+    println!("\tMean time: {:?}", mean(&request_times));
+    println!("\tMedian time: {:?}", median(&mut request_times));
+    println!(
+        "\nPercentage of requests that succeeded: {}%",
+        (num_succeed * 100) / num_profile_hits
+    );
+    println!(
+        "\nError codes returned that weren't a success: {:?}",
+        error_codes
+    );
+    println!("\nSize in bytes:");
+    println!(
+        "\tSmallest response: {:?} bytes",
+        bytes.iter().min().unwrap()
+    );
+    println!(
+        "\tLargest response: {:?} bytes",
+        bytes.iter().max().unwrap()
+    );
+
+    Ok(())
 }
 
 

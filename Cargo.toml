@@ -9,3 +9,5 @@ edition = "2018"
 [dependencies]
 getopts = "0.2.21"
 openssl = "0.10.30"
+futures = { version = "0.3.*"}
+tokio = {version = "0.2.*", features = ["full"] }
